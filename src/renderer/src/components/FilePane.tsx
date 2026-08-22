@@ -63,7 +63,7 @@ export default function FilePane({ root, externalFile }: { root: string | null; 
       <div className="tree"><Tree nodes={tree} depth={0} active={file} onOpen={loadFile} /></div>
       <div className="paneHead"><code>{shown}</code>{dirty && <span> •</span>}<span className="grow" /><button className="ghost" disabled={!dirty} onClick={save}>Save ⌘S</button></div>
       {changedOnDisk && <div className="banner">File changed on disk. <button onClick={() => loadFile(file!)}>Reload</button><button onClick={save}>Keep mine</button></div>}
-      <div className="editor">{file && <CodeMirror value={content} theme="dark" extensions={lang(file)} onChange={(v) => { setContent(v); setDirty(true) }} basicSetup={{ lineNumbers: true, foldGutter: false }} />}</div>
+      <div className="editor">{file && <CodeMirror value={content} theme="dark" height="100%" style={{ height: '100%' }} extensions={lang(file)} onChange={(v) => { setContent(v); setDirty(true) }} basicSetup={{ lineNumbers: true, foldGutter: false }} />}</div>
     </div>
   )
 }
