@@ -71,3 +71,10 @@ input.inline { padding: 3px 6px; font-size: 12px; }
 .mcpList { font-family: var(--mono); font-size: 12px; } .mcpList li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); }
 pre.log { background: var(--bg); border: 1px solid var(--border); padding: 8px; font-size: 11px; max-height: 160px; overflow: auto; white-space: pre-wrap; }
 .err { color: var(--danger); font-size: 12px; margin-top: 8px; }
+
+.shell { display: flex; flex-direction: column; border-top: 1px solid var(--border); flex: none; }
+.shell.open { height: 38%; min-height: 160px; }
+.shell .terms { flex: 1; }
+.tab { padding: 3px 8px; border-radius: 5px; cursor: pointer; color: var(--fg2); display: inline-flex; gap: 6px; align-items: center; }
+.tab:hover { background: var(--bg3); } .tab.active { color: var(--fg); background: var(--bg3); }
+.tab .x { opacity: .5; } .tab .x:hover { opacity: 1; color: var(--danger); }

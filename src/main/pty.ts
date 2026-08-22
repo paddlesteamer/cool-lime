@@ -4,9 +4,14 @@ import { claudeBin, childPath } from './claudeBin'
 
 const sessions = new Map<string, pty.IPty>()
 
-export function startSession(id: string, cwd: string, wc: WebContents, cols = 120, rows = 30, model = '') {
+export type SessionKind = 'claude' | 'shell'
+
+export function startSession(id: string, cwd: string, wc: WebContents, cols = 120, rows = 30, model = '', kind: SessionKind = 'claude') {
   if (sessions.has(id)) return
-  const p = pty.spawn(claudeBin(), ['--dangerously-skip-permissions', ...(model ? ['--model', model] : [])], {
+  const [bin, args] = kind === 'shell'
+    ? [process.env.SHELL || '/bin/zsh', ['-l']]
+    : [claudeBin(), ['--dangerously-skip-permissions', ...(model ? ['--model', model] : [])]]
+  const p = pty.spawn(bin, args, {
     name: 'xterm-256color', cols, rows, cwd,
     env: { ...process.env, PATH: childPath(), TERM: 'xterm-256color', COLORTERM: 'truecolor', COOL_LIME: '1' } as any
   })
@@ -17,5 +22,6 @@ export function startSession(id: string, cwd: string, wc: WebContents, cols = 12
 export const writeSession = (id: string, data: string) => sessions.get(id)?.write(data)
 export const resizeSession = (id: string, cols: number, rows: number) => { try { sessions.get(id)?.resize(cols, rows) } catch {} }
 export const killSession = (id: string) => { sessions.get(id)?.kill(); sessions.delete(id) }
+export const killPrefix = (prefix: string) => { for (const [id, p] of sessions) if (id === prefix || id.startsWith(prefix + '/') || id.startsWith(prefix + '#')) { p.kill(); sessions.delete(id) } }
 export const hasSession = (id: string) => sessions.has(id)
 export const killAll = () => { for (const p of sessions.values()) p.kill(); sessions.clear() }

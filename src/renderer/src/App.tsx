@@ -4,6 +4,7 @@ import StartScreen from './components/StartScreen'
 import Sidebar from './components/Sidebar'
 import TerminalPane from './components/TerminalPane'
 import FilePane from './components/FilePane'
+import ShellPanel from './components/ShellPanel'
 import ProjectSettings from './components/ProjectSettings'
 
 export default function App() {
@@ -14,6 +15,11 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [ctxStatus, setCtxStatus] = useState<ContextStatus>({ state: 'idle' })
   const [externalFile, setExternalFile] = useState<string | null>(null)
+  const [shellOpen, setShellOpen] = useState(false)
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key === 'j') { e.preventDefault(); setShellOpen((o) => !o) } }
+    window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h)
+  }, [])
 
   useEffect(() => window.lime.context.onStatus(setCtxStatus), [])
   useEffect(() => {
@@ -36,14 +42,14 @@ export default function App() {
   }
   const renameSubtopic = async (from: string, to: string) => {
     if (!project) return
-    await window.lime.pty.kill(`${project.path}/${from}`)
+    await window.lime.pty.killPrefix(`${project.path}/${from}`)
     const m = await window.lime.projects.renameSubtopic(project.path, from, to)
     const dir = m.subtopics.find((s: string) => !manifest!.subtopics.includes(s)) ?? from
     setOpened((o) => o.filter((s) => s !== from)); setManifest(m); if (subtopic === from) setSubtopic(dir)
   }
   const deleteSubtopic = async (name: string) => {
     if (!project) return
-    await window.lime.pty.kill(`${project.path}/${name}`)
+    await window.lime.pty.killPrefix(`${project.path}/${name}`)
     const m = await window.lime.projects.deleteSubtopic(project.path, name)
     setOpened((o) => o.filter((s) => s !== name)); setManifest(m); if (subtopic === name) setSubtopic(m.subtopics[0] ?? null)
   }
@@ -57,7 +63,7 @@ export default function App() {
 
   useEffect(() => { if (subtopic && !opened.includes(subtopic)) setOpened((o) => [...o, subtopic]) }, [subtopic])
 
-  const closeProject = () => { opened.forEach((s) => window.lime.pty.kill(`${project!.path}/${s}`)); window.lime.fs.unwatch(); setProject(null); setManifest(null); setSubtopic(null); setOpened([]) }
+  const closeProject = () => { window.lime.pty.killPrefix(project!.path); window.lime.fs.unwatch(); setProject(null); setManifest(null); setSubtopic(null); setOpened([]) }
 
   return (
     <>
@@ -70,8 +76,10 @@ export default function App() {
           <Sidebar project={project} manifest={manifest} subtopic={subtopic} opened={opened} onSelect={(s) => { setSubtopic(s); setExternalFile(null) }} onAdd={addSubtopic} onRename={renameSubtopic} onDelete={deleteSubtopic} ctxStatus={ctxStatus} onOpenFile={setExternalFile} onRegenerate={() => window.lime.context.regenerate(project.path)} />
           <div className="gutter" onMouseDown={drag(0)} />
           <div className="center">
-            {subtopic ? <TerminalPane projectPath={project.path} opened={opened} active={subtopic} model={manifest.settings?.sessionModel ?? ''} />
-              : <div className="empty">No subtopics yet.<br />Add one from the sidebar to start a Claude Code session.</div>}
+            {subtopic ? <>
+              <TerminalPane projectPath={project.path} opened={opened} active={subtopic} model={manifest.settings?.sessionModel ?? ''} />
+              <ShellPanel projectPath={project.path} subtopic={subtopic} open={shellOpen} onToggle={() => setShellOpen((o) => !o)} />
+            </> : <div className="empty">No subtopics yet.<br />Add one from the sidebar to start a Claude Code session.</div>}
           </div>
           <div className="gutter" onMouseDown={drag(1)} />
           <FilePane root={subtopic ? `${project.path}/${subtopic}` : null} externalFile={externalFile} />

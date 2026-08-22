@@ -63,10 +63,11 @@ handle('mcp:remove', async (projectPath: string, sub: string | null, name: strin
 })
 
 // pty
-handle('pty:start', (id: string, cwd: string, cols: number, rows: number, model?: string) => ptyMgr.startSession(id, cwd, win.webContents, cols, rows, model))
+handle('pty:start', (id: string, cwd: string, cols: number, rows: number, model?: string, kind?: ptyMgr.SessionKind) => ptyMgr.startSession(id, cwd, win.webContents, cols, rows, model, kind))
 ipcMain.on('pty:write', (_e, id: string, d: string) => ptyMgr.writeSession(id, d))
 ipcMain.on('pty:resize', (_e, id: string, c: number, r: number) => ptyMgr.resizeSession(id, c, r))
 handle('pty:kill', ptyMgr.killSession)
+handle('pty:killPrefix', ptyMgr.killPrefix)
 handle('pty:has', ptyMgr.hasSession)
 
 // files
