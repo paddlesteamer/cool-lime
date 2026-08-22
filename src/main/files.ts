@@ -25,7 +25,7 @@ export const writeFile = (p: string, c: string) => fs.writeFile(p, c)
 let watcher: FSWatcher | null = null
 export function watchDir(root: string, wc: WebContents) {
   watcher?.close()
-  watcher = chokidar.watch(root, {
+  watcher = chokidar.watch([root, join(root, '..', 'CONTEXT.md')], {
     ignored: (p) => p.split('/').some((s) => IGNORE.has(s)), ignoreInitial: true, persistent: true,
     awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 50 }
   })

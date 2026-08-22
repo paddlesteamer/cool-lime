@@ -19,7 +19,7 @@ function Tree({ nodes, depth, active, onOpen }: { nodes: FileNode[]; depth: numb
     </div>))}</>
 }
 
-export default function FilePane({ root }: { root: string | null }) {
+export default function FilePane({ root, externalFile }: { root: string | null; externalFile: string | null }) {
   const [tree, setTree] = useState<FileNode[]>([])
   const [file, setFile] = useState<string | null>(null)
   const [content, setContent] = useState('')
@@ -47,6 +47,8 @@ export default function FilePane({ root }: { root: string | null }) {
     return off
   }, [root])
 
+  useEffect(() => { if (externalFile) loadFile(externalFile).catch(() => {}) }, [externalFile])
+
   const save = async () => { if (file) { await window.lime.fs.write(file, content); setDirty(false); setChangedOnDisk(false) } }
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); save() } }
@@ -54,11 +56,12 @@ export default function FilePane({ root }: { root: string | null }) {
   })
 
   if (!root) return <div className="right"><div className="empty">Select a subtopic</div></div>
+  const shown = file ? (file.startsWith(root + '/') ? file.slice(root.length + 1) : '../' + file.split('/').pop()) : '—'
   return (
     <div className="right">
       <div className="paneHead"><span>Files</span><span className="grow" /><button className="ghost" onClick={reload}>↻</button><button className="ghost" onClick={() => window.lime.projects.revealInFinder(root)}>Finder</button></div>
       <div className="tree"><Tree nodes={tree} depth={0} active={file} onOpen={loadFile} /></div>
-      <div className="paneHead"><code>{file ? file.slice(root.length + 1) : '—'}</code>{dirty && <span> •</span>}<span className="grow" /><button className="ghost" disabled={!dirty} onClick={save}>Save ⌘S</button></div>
+      <div className="paneHead"><code>{shown}</code>{dirty && <span> •</span>}<span className="grow" /><button className="ghost" disabled={!dirty} onClick={save}>Save ⌘S</button></div>
       {changedOnDisk && <div className="banner">File changed on disk. <button onClick={() => loadFile(file!)}>Reload</button><button onClick={save}>Keep mine</button></div>}
       <div className="editor">{file && <CodeMirror value={content} theme="dark" extensions={lang(file)} onChange={(v) => { setContent(v); setDirty(true) }} basicSetup={{ lineNumbers: true, foldGutter: false }} />}</div>
     </div>

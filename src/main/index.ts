@@ -4,6 +4,7 @@ import * as projects from './projects'
 import * as ptyMgr from './pty'
 import * as files from './files'
 import * as mcp from './mcp'
+import * as context from './context'
 
 let win: BrowserWindow
 
@@ -35,6 +36,12 @@ handle('projects:importContextFiles', async (projectPath: string) => {
   return r.filePaths
 })
 handle('projects:revealInFinder', (p: string) => shell.showItemInFolder(p))
+
+// context pipeline
+handle('context:watch', (root: string) => context.startWatching(root, win.webContents))
+handle('context:unwatch', context.stopWatching)
+handle('context:regenerate', (root: string) => context.schedule(root))
+handle('context:status', context.getStatus)
 
 // mcp
 handle('mcp:setProject', async (projectPath: string, specs: any[]) => {

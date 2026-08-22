@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { ProjectManifest, ProjectRef } from '@shared/types'
+import type { ContextStatus, ProjectManifest, ProjectRef } from '@shared/types'
 import StartScreen from './components/StartScreen'
 import Sidebar from './components/Sidebar'
 import TerminalPane from './components/TerminalPane'
@@ -12,10 +12,19 @@ export default function App() {
   const [subtopic, setSubtopic] = useState<string | null>(null)
   const [opened, setOpened] = useState<string[]>([]) // subtopics with live terminals
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [ctxStatus, setCtxStatus] = useState<ContextStatus>({ state: 'idle' })
+  const [externalFile, setExternalFile] = useState<string | null>(null)
+
+  useEffect(() => window.lime.context.onStatus(setCtxStatus), [])
+  useEffect(() => {
+    if (!project) return
+    window.lime.context.watch(project.path)
+    return () => { window.lime.context.unwatch() }
+  }, [project?.path])
 
   const open = useCallback(async (path: string) => {
     const { ref, manifest } = await window.lime.projects.open(path)
-    setProject(ref); setManifest(manifest); setSubtopic(manifest.subtopics[0] ?? null); setOpened([])
+    setProject(ref); setManifest(manifest); setSubtopic(manifest.subtopics[0] ?? null); setOpened([]); setExternalFile(null)
   }, [])
 
   const refresh = useCallback(async () => { if (project) setManifest(await window.lime.projects.manifest(project.path)) }, [project])
@@ -39,12 +48,12 @@ export default function App() {
       </div>
       {!project || !manifest ? <StartScreen onOpen={open} /> : (
         <div className="layout">
-          <Sidebar project={project} manifest={manifest} subtopic={subtopic} opened={opened} onSelect={setSubtopic} onAdd={addSubtopic} />
+          <Sidebar project={project} manifest={manifest} subtopic={subtopic} opened={opened} onSelect={(s) => { setSubtopic(s); setExternalFile(null) }} onAdd={addSubtopic} ctxStatus={ctxStatus} onOpenFile={setExternalFile} onRegenerate={() => window.lime.context.regenerate(project.path)} />
           <div className="center">
             {subtopic ? <TerminalPane projectPath={project.path} opened={opened} active={subtopic} />
               : <div className="empty">No subtopics yet.<br />Add one from the sidebar to start a Claude Code session.</div>}
           </div>
-          <FilePane root={subtopic ? `${project.path}/${subtopic}` : null} />
+          <FilePane root={subtopic ? `${project.path}/${subtopic}` : null} externalFile={externalFile} />
         </div>
       )}
       {settingsOpen && project && manifest && <ProjectSettings project={project} manifest={manifest} subtopic={subtopic} onClose={() => { setSettingsOpen(false); refresh() }} />}

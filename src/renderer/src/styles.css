@@ -36,6 +36,10 @@ label { display: block; color: var(--fg2); font-size: 12px; margin: 10px 0 4px; 
 .item.active { color: var(--lime); background: var(--bg3); border-left: 2px solid var(--lime); padding-left: 10px; }
 .item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex: none; }
 .item .dot.live { background: var(--lime); }
+.item .dot.busy { background: #f2d27a; animation: pulse 1s infinite alternate; }
+.item .dot.err { background: var(--danger); }
+@keyframes pulse { from { opacity: .3 } to { opacity: 1 } }
+.sidebar .status { padding: 2px 12px 12px; font-size: 11px; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sidebar .spacer { flex: 1; }
 
 .center { display: flex; flex-direction: column; min-width: 0; }

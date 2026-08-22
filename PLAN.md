@@ -34,6 +34,9 @@ Stored in cool-lime.json. Applied with `claude mcp add -s project ...` run insid
 (all folders for project-wide, one folder for subtopic-only); `claude mcp remove -s project` on delete.
 Applied again when a new subtopic is created.
 
+## Status
+Milestones 1–4 implemented (2026-08-22). Pipeline runs `claude -p --allowedTools Read,Glob,Grep,LS` with the prompt on stdin, writes CONTEXT.md itself.
+
 ## Milestones
 1. Shell: Electron + React, start screen, registry, create/open project, sidebar.
 2. Terminal: pty per subtopic, tab switching, resize.
