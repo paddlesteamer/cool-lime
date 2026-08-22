@@ -32,6 +32,12 @@ button.icon.on { color: var(--lime); }
 .row { display: flex; gap: 8px; align-items: center; } .row.end { justify-content: flex-end; margin-top: 14px; }
 
 .layout { display: grid; grid-template-columns: 220px 4px 1fr 4px 380px; height: calc(100% - 38px); min-height: 0; overflow: hidden; }
+.pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.pane.hidden { display: none; }
+.pane > .sidebar, .pane > .right { flex: 1; min-height: 0; }
+.strip { background: var(--bg2); border-right: 1px solid var(--border); border-left: 1px solid var(--border); cursor: pointer; display: flex; flex-direction: column; align-items: center; padding-top: 10px; gap: 10px; color: var(--fg2); }
+.strip:hover { color: var(--lime); background: var(--bg3); }
+.strip .vlabel { writing-mode: vertical-rl; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .gutter { cursor: col-resize; background: var(--border); opacity: .5; } .gutter:hover { background: var(--lime2); opacity: 1; }
 input.inline { padding: 3px 6px; font-size: 12px; }
 .menu { position: fixed; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 4px; z-index: 20; min-width: 150px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
@@ -40,6 +46,8 @@ input.inline { padding: 3px 6px; font-size: 12px; }
 .sidebar { background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: auto; }
 .sidebar h3 { margin: 0; padding: 12px 12px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg2); display: flex; justify-content: space-between; align-items: center; }
 .sidebar h3 button { padding: 0 6px; line-height: 18px; }
+.sidebar h3 button.icon { width: 22px; height: 22px; }
+.paneHead button.icon { width: 24px; height: 24px; }
 .item { padding: 7px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item:hover { background: var(--bg3); color: var(--fg); }
 .item.active { color: var(--lime); background: var(--bg3); border-left: 2px solid var(--lime); padding-left: 10px; }

@@ -19,7 +19,7 @@ function Tree({ nodes, depth, active, onOpen }: { nodes: FileNode[]; depth: numb
     </div>))}</>
 }
 
-export default function FilePane({ root, externalFile }: { root: string | null; externalFile: string | null }) {
+export default function FilePane({ root, externalFile, onCollapse }: { root: string | null; externalFile: string | null; onCollapse: () => void }) {
   const [tree, setTree] = useState<FileNode[]>([])
   const [file, setFile] = useState<string | null>(null)
   const [content, setContent] = useState('')
@@ -55,11 +55,11 @@ export default function FilePane({ root, externalFile }: { root: string | null; 
     window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h)
   })
 
-  if (!root) return <div className="right"><div className="empty">Select a subtopic</div></div>
+  if (!root) return <div className="right"><div className="paneHead"><span>Files</span><span className="grow" /><button className="ghost icon" title="Collapse pane" aria-label="Collapse pane" onClick={onCollapse}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></button></div><div className="empty">Select a subtopic</div></div>
   const shown = file ? (file.startsWith(root + '/') ? file.slice(root.length + 1) : '../' + file.split('/').pop()) : '—'
   return (
     <div className="right">
-      <div className="paneHead"><span>Files</span><span className="grow" /><button className="ghost" onClick={reload}>↻</button><button className="ghost" onClick={() => window.lime.projects.revealInFinder(root)}>Finder</button></div>
+      <div className="paneHead"><span>Files</span><span className="grow" /><button className="ghost" onClick={reload}>↻</button><button className="ghost" onClick={() => window.lime.projects.revealInFinder(root)}>Finder</button><button className="ghost icon" title="Collapse pane" aria-label="Collapse pane" onClick={onCollapse}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></button></div>
       <div className="tree"><Tree nodes={tree} depth={0} active={file} onOpen={loadFile} /></div>
       <div className="paneHead"><code>{shown}</code>{dirty && <span> •</span>}<span className="grow" /><button className="ghost" disabled={!dirty} onClick={save}>Save ⌘S</button></div>
       {changedOnDisk && <div className="banner">File changed on disk. <button onClick={() => loadFile(file!)}>Reload</button><button onClick={save}>Keep mine</button></div>}

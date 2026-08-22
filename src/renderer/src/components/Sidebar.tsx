@@ -4,10 +4,10 @@ import type { ContextStatus, ProjectManifest, ProjectRef } from '@shared/types'
 interface Props {
   project: ProjectRef; manifest: ProjectManifest; subtopic: string | null; opened: string[]
   onSelect: (s: string) => void; onAdd: (name: string) => Promise<void>; onRename: (from: string, to: string) => Promise<void>; onDelete: (s: string) => Promise<void>
-  ctxStatus: ContextStatus; onOpenFile: (p: string) => void; onRegenerate: () => void
+  ctxStatus: ContextStatus; onOpenFile: (p: string) => void; onRegenerate: () => void; onCollapse: () => void
 }
 
-export default function Sidebar({ project, manifest, subtopic, opened, onSelect, onAdd, onRename, onDelete, ctxStatus, onOpenFile, onRegenerate }: Props) {
+export default function Sidebar({ project, manifest, subtopic, opened, onSelect, onAdd, onRename, onDelete, ctxStatus, onOpenFile, onRegenerate, onCollapse }: Props) {
   const [adding, setAdding] = useState(false)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
@@ -26,7 +26,7 @@ export default function Sidebar({ project, manifest, subtopic, opened, onSelect,
 
   return (
     <div className="sidebar" onClick={() => setMenu(null)}>
-      <h3>Project</h3>
+      <h3>Project <button className="ghost icon" title="Collapse pane" aria-label="Collapse pane" onClick={onCollapse}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></button></h3>
       <div className="item active" title={project.path} onClick={() => window.lime.projects.revealInFinder(project.path)}>{project.name}</div>
       <h3>Subtopics <button className="ghost" title="Add subtopic" onClick={() => { setAdding(true); setDraft('') }}>+</button></h3>
       {manifest.subtopics.map((s) => renaming === s ? <div key={s} className="item">{input}</div> : (
