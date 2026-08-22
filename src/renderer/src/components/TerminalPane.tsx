@@ -6,7 +6,7 @@ export default function TerminalPane({ projectPath, opened, active, model }: Pro
   const restart = () => window.lime.pty.kill(`${projectPath}/${active}`) // exit overlay offers relaunch
   return (
     <>
-      <div className="paneHead"><span>claude --dangerously-skip-permissions</span><span className="grow" /><code>{active}/</code><button className="ghost" onClick={restart}>Restart</button></div>
+      <div className="paneHead"><span>claude --dangerously-skip-permissions (resumes last session if one exists)</span><span className="grow" /><code>{active}/</code><button className="ghost" onClick={restart}>Restart</button></div>
       <div className="terms">
         {opened.map((s) => <XTerm key={s} id={`${projectPath}/${s}`} cwd={`${projectPath}/${s}`} visible={s === active} kind="claude" model={model} />)}
       </div>

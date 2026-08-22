@@ -1,16 +1,25 @@
 import * as pty from 'node-pty'
 import type { WebContents } from 'electron'
+import { readdirSync } from 'fs'
+import { homedir } from 'os'
+import { join } from 'path'
 import { claudeBin, childPath } from './claudeBin'
 
 const sessions = new Map<string, pty.IPty>()
 
 export type SessionKind = 'claude' | 'shell'
 
+/** True if Claude Code has a saved conversation for this cwd (~/.claude/projects/<encoded cwd>/*.jsonl). */
+export function hasClaudeHistory(cwd: string): boolean {
+  const dir = join(homedir(), '.claude', 'projects', cwd.replace(/[/.]/g, '-'))
+  try { return readdirSync(dir).some((f) => f.endsWith('.jsonl')) } catch { return false }
+}
+
 export function startSession(id: string, cwd: string, wc: WebContents, cols = 120, rows = 30, model = '', kind: SessionKind = 'claude') {
   if (sessions.has(id)) return
   const [bin, args] = kind === 'shell'
     ? [process.env.SHELL || '/bin/zsh', ['-l']]
-    : [claudeBin(), ['--dangerously-skip-permissions', ...(model ? ['--model', model] : [])]]
+    : [claudeBin(), ['--dangerously-skip-permissions', ...(hasClaudeHistory(cwd) ? ['--continue'] : []), ...(model ? ['--model', model] : [])]]
   const p = pty.spawn(bin, args, {
     name: 'xterm-256color', cols, rows, cwd,
     env: { ...process.env, PATH: childPath(), TERM: 'xterm-256color', COLORTERM: 'truecolor', COOL_LIME: '1' } as any
