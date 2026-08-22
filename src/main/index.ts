@@ -28,6 +28,9 @@ handle('projects:create', projects.createProject)
 handle('projects:open', projects.openProject)
 handle('projects:manifest', projects.readManifest)
 handle('projects:addSubtopic', projects.addSubtopic)
+handle('projects:renameSubtopic', projects.renameSubtopic)
+handle('projects:deleteSubtopic', projects.deleteSubtopic)
+handle('projects:updateSettings', projects.updateSettings)
 handle('projects:addContextText', projects.addContextText)
 handle('projects:importContextFiles', async (projectPath: string) => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'],
@@ -60,7 +63,7 @@ handle('mcp:remove', async (projectPath: string, sub: string | null, name: strin
 })
 
 // pty
-handle('pty:start', (id: string, cwd: string, cols: number, rows: number) => ptyMgr.startSession(id, cwd, win.webContents, cols, rows))
+handle('pty:start', (id: string, cwd: string, cols: number, rows: number, model?: string) => ptyMgr.startSession(id, cwd, win.webContents, cols, rows, model))
 ipcMain.on('pty:write', (_e, id: string, d: string) => ptyMgr.writeSession(id, d))
 ipcMain.on('pty:resize', (_e, id: string, c: number, r: number) => ptyMgr.resizeSession(id, c, r))
 handle('pty:kill', ptyMgr.killSession)

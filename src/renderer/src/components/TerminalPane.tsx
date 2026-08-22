@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 
-interface Props { projectPath: string; opened: string[]; active: string }
+interface Props { projectPath: string; opened: string[]; active: string; model: string }
 
-function TermView({ id, cwd, visible }: { id: string; cwd: string; visible: boolean }) {
+function TermView({ id, cwd, visible, model }: { id: string; cwd: string; visible: boolean; model: string }) {
+  const [exited, setExited] = useState<number | null>(null)
   const ref = useRef<HTMLDivElement>(null)
   const termRef = useRef<{ term: Terminal; fit: FitAddon } | null>(null)
 
@@ -19,9 +20,9 @@ function TermView({ id, cwd, visible }: { id: string; cwd: string; visible: bool
     term.open(ref.current!)
     fit.fit()
     termRef.current = { term, fit }
-    window.lime.pty.start(id, cwd, term.cols, term.rows)
+    window.lime.pty.start(id, cwd, term.cols, term.rows, model)
     const offData = window.lime.pty.onData((sid: string, d: string) => { if (sid === id) term.write(d) })
-    const offExit = window.lime.pty.onExit((sid: string, code: number) => { if (sid === id) term.write(`\r\n\x1b[90m[claude exited with code ${code}] — select the subtopic again to restart\x1b[0m\r\n`) })
+    const offExit = window.lime.pty.onExit((sid: string, code: number) => { if (sid === id) setExited(code) })
     term.onData((d) => window.lime.pty.write(id, d))
     term.onResize(({ cols, rows }) => window.lime.pty.resize(id, cols, rows))
     const ro = new ResizeObserver(() => { if (ref.current?.offsetParent) fit.fit() })
@@ -31,16 +32,22 @@ function TermView({ id, cwd, visible }: { id: string; cwd: string; visible: bool
 
   useEffect(() => { if (visible) setTimeout(() => { termRef.current?.fit.fit(); termRef.current?.term.focus() }, 0) }, [visible])
 
-  return <div ref={ref} className={`term ${visible ? 'visible' : ''}`} />
+  const relaunch = async () => { const t = termRef.current!; t.term.clear(); setExited(null); await window.lime.pty.start(id, cwd, t.term.cols, t.term.rows, model); t.term.focus() }
+  return (
+    <div className={`term ${visible ? 'visible' : ''}`}>
+      <div ref={ref} style={{ height: '100%' }} />
+      {exited !== null && <div className="overlay"><div>Claude session ended (exit code {exited})<br /><button className="primary" onClick={relaunch}>Start new session</button></div></div>}
+    </div>
+  )
 }
 
-export default function TerminalPane({ projectPath, opened, active }: Props) {
-  const restart = async () => { const id = `${projectPath}/${active}`; await window.lime.pty.kill(id); await window.lime.pty.start(id, id, 120, 30) }
+export default function TerminalPane({ projectPath, opened, active, model }: Props) {
+  const restart = () => window.lime.pty.kill(`${projectPath}/${active}`) // exit overlay offers relaunch
   return (
     <>
       <div className="paneHead"><span>claude --dangerously-skip-permissions</span><span className="grow" /><code>{active}/</code><button className="ghost" onClick={restart}>Restart</button></div>
       <div className="terms">
-        {opened.map((s) => <TermView key={s} id={`${projectPath}/${s}`} cwd={`${projectPath}/${s}`} visible={s === active} />)}
+        {opened.map((s) => <TermView key={s} id={`${projectPath}/${s}`} cwd={`${projectPath}/${s}`} visible={s === active} model={model} />)}
       </div>
     </>
   )

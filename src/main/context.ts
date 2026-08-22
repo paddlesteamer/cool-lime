@@ -40,7 +40,7 @@ async function runOnce(root: string) {
   setStatus({ state: 'running', message: 'Distilling context…' })
   const started = Date.now()
   const out = await new Promise<string>((resolve, reject) => {
-    const child = execFile(claudeBin(), ['-p', '--output-format', 'text', '--allowedTools', 'Read,Glob,Grep,LS'],
+    const child = execFile(claudeBin(), ['-p', '--output-format', 'text', '--allowedTools', 'Read,Glob,Grep,LS', ...(m.settings?.curatorModel ? ['--model', m.settings.curatorModel] : [])],
       { cwd: root, env: { ...process.env, PATH: childPath() }, maxBuffer: 16 * 1024 * 1024, timeout: 10 * 60 * 1000 },
       (err, stdout, stderr) => (err ? reject(new Error(stderr || err.message)) : resolve(stdout)))
     child.stdin?.end(PROMPT(m.name, m.subtopics))
@@ -80,7 +80,7 @@ export function startWatching(root: string, wc: WebContents) {
     ignored: (p) => p.split(sep).some((s) => s === 'node_modules' || s === '.git' || s === 'scratchpad'),
     ignoreInitial: true, depth: 2, awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 100 }
   })
-  const onEvt = (p: string) => { if (isTrigger(root, p)) schedule(root) }
+  const onEvt = async (p: string) => { if (isTrigger(root, p) && (await readManifest(root)).settings?.autoContext !== false) schedule(root) }
   watcher.on('add', onEvt).on('change', onEvt).on('unlink', onEvt)
   setStatus({ state: 'idle' })
 }

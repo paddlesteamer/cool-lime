@@ -11,6 +11,7 @@ const api = {
   projects: {
     list: invoke('projects:list'), create: invoke('projects:create'), open: invoke('projects:open'),
     manifest: invoke('projects:manifest'), addSubtopic: invoke('projects:addSubtopic'),
+    renameSubtopic: invoke('projects:renameSubtopic'), deleteSubtopic: invoke('projects:deleteSubtopic'), updateSettings: invoke('projects:updateSettings'),
     addContextText: invoke('projects:addContextText'), importContextFiles: invoke('projects:importContextFiles'),
     revealInFinder: invoke('projects:revealInFinder')
   },

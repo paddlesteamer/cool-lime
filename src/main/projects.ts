@@ -1,6 +1,8 @@
 import { promises as fs } from 'fs'
 import { join, basename } from 'path'
-import type { ProjectManifest, ProjectRef } from '@shared/types'
+import type { ProjectManifest, ProjectRef, ProjectSettings } from '@shared/types'
+import { DEFAULT_SETTINGS } from '@shared/types'
+import { shell } from 'electron'
 import { COOL_LIME_HOME, CONTEXT_DIR, CONTEXT_FILE, MANIFEST, PROJECTS_ROOT, REGISTRY_FILE } from './paths'
 import { applyMcps } from './mcp'
 
@@ -32,6 +34,7 @@ async function touchRegistry(ref: ProjectRef) {
 export async function readManifest(projectPath: string): Promise<ProjectManifest> {
   const m = await readJson<ProjectManifest | null>(join(projectPath, MANIFEST), null)
   if (!m) throw new Error(`Not a Cool-Lime project: ${projectPath}`)
+  m.settings = { ...DEFAULT_SETTINGS, ...(m.settings ?? {}) }
   return m
 }
 export async function writeManifest(projectPath: string, m: ProjectManifest) {
@@ -82,4 +85,34 @@ export async function importContextFile(projectPath: string, srcPath: string) {
 }
 export async function addContextText(projectPath: string, title: string, text: string) {
   await fs.writeFile(join(projectPath, CONTEXT_DIR, `${slug(title)}.md`), text)
+}
+
+export async function updateSettings(projectPath: string, patch: Partial<ProjectSettings>): Promise<ProjectManifest> {
+  const m = await readManifest(projectPath)
+  m.settings = { ...m.settings!, ...patch }
+  await writeManifest(projectPath, m)
+  return m
+}
+
+export async function renameSubtopic(projectPath: string, from: string, to: string): Promise<ProjectManifest> {
+  const m = await readManifest(projectPath)
+  const dir = slug(to)
+  if (!m.subtopics.includes(from)) throw new Error(`No such subtopic: ${from}`)
+  if (m.subtopics.includes(dir)) throw new Error(`Subtopic exists: ${dir}`)
+  await fs.rename(join(projectPath, from), join(projectPath, dir))
+  m.subtopics = m.subtopics.map((s) => (s === from ? dir : s))
+  if (m.mcps.subtopic[from]) { m.mcps.subtopic[dir] = m.mcps.subtopic[from]; delete m.mcps.subtopic[from] }
+  await writeManifest(projectPath, m)
+  return m
+}
+
+/** Moves the subtopic folder to the Trash (recoverable) and drops it from the manifest. */
+export async function deleteSubtopic(projectPath: string, name: string): Promise<ProjectManifest> {
+  const m = await readManifest(projectPath)
+  if (!m.subtopics.includes(name)) throw new Error(`No such subtopic: ${name}`)
+  await shell.trashItem(join(projectPath, name))
+  m.subtopics = m.subtopics.filter((s) => s !== name)
+  delete m.mcps.subtopic[name]
+  await writeManifest(projectPath, m)
+  return m
 }

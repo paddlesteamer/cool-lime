@@ -12,7 +12,15 @@ export interface ProjectManifest {
   created: string
   subtopics: string[]
   mcps: { project: McpSpec[]; subtopic: Record<string, McpSpec[]> }
+  settings?: ProjectSettings
 }
+
+export interface ProjectSettings {
+  autoContext: boolean // watch & regenerate CONTEXT.md automatically
+  curatorModel: string // '' = default
+  sessionModel: string // '' = default, passed as --model to interactive sessions
+}
+export const DEFAULT_SETTINGS: ProjectSettings = { autoContext: true, curatorModel: '', sessionModel: '' }
 
 export interface ProjectRef {
   name: string

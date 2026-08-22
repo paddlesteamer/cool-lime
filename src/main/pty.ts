@@ -4,9 +4,9 @@ import { claudeBin, childPath } from './claudeBin'
 
 const sessions = new Map<string, pty.IPty>()
 
-export function startSession(id: string, cwd: string, wc: WebContents, cols = 120, rows = 30) {
+export function startSession(id: string, cwd: string, wc: WebContents, cols = 120, rows = 30, model = '') {
   if (sessions.has(id)) return
-  const p = pty.spawn(claudeBin(), ['--dangerously-skip-permissions'], {
+  const p = pty.spawn(claudeBin(), ['--dangerously-skip-permissions', ...(model ? ['--model', model] : [])], {
     name: 'xterm-256color', cols, rows, cwd,
     env: { ...process.env, PATH: childPath(), TERM: 'xterm-256color', COLORTERM: 'truecolor', COOL_LIME: '1' } as any
   })

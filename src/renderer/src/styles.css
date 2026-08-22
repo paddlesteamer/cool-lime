@@ -27,7 +27,12 @@ label { display: block; color: var(--fg2); font-size: 12px; margin: 10px 0 4px; 
 .recent li:hover { background: var(--bg3); } .recent li small { color: var(--fg2); }
 .row { display: flex; gap: 8px; align-items: center; } .row.end { justify-content: flex-end; margin-top: 14px; }
 
-.layout { display: grid; grid-template-columns: 220px 1fr 380px; height: calc(100% - 38px); }
+.layout { display: grid; grid-template-columns: 220px 4px 1fr 4px 380px; height: calc(100% - 38px); }
+.gutter { cursor: col-resize; background: var(--border); opacity: .5; } .gutter:hover { background: var(--lime2); opacity: 1; }
+input.inline { padding: 3px 6px; font-size: 12px; }
+.menu { position: fixed; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 4px; z-index: 20; min-width: 150px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.menu div { padding: 6px 10px; border-radius: 5px; cursor: pointer; } .menu div:hover { background: var(--bg2); } .menu div.danger { color: var(--danger); }
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(15,18,15,.85); z-index: 5; text-align: center; line-height: 1.8; color: var(--fg2); }
 .sidebar { background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: auto; }
 .sidebar h3 { margin: 0; padding: 12px 12px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg2); display: flex; justify-content: space-between; align-items: center; }
 .sidebar h3 button { padding: 0 6px; line-height: 18px; }

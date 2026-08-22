@@ -26,7 +26,7 @@ function McpForm({ onAdd }: { onAdd: (s: McpSpec) => void }) {
 
 export default function ProjectSettings({ project, manifest: initial, subtopic, onClose }: Props) {
   const [manifest, setManifest] = useState(initial)
-  const [tab, setTab] = useState<'context' | 'mcp'>('context')
+  const [tab, setTab] = useState<'context' | 'mcp' | 'general'>('context')
   const [scope, setScope] = useState<'project' | 'subtopic'>('project')
   const [title, setTitle] = useState(''); const [text, setText] = useState('')
   const [log, setLog] = useState(''); const [busy, setBusy] = useState(false)
@@ -49,6 +49,7 @@ export default function ProjectSettings({ project, manifest: initial, subtopic, 
       <div className="row"><h2 style={{ flex: 1 }}>{project.name} — settings</h2>
         <button className={tab === 'context' ? 'primary' : ''} onClick={() => setTab('context')}>Context</button>
         <button className={tab === 'mcp' ? 'primary' : ''} onClick={() => setTab('mcp')}>MCP servers</button>
+        <button className={tab === 'general' ? 'primary' : ''} onClick={() => setTab('general')}>General</button>
         <button className="ghost" onClick={onClose}>✕</button></div>
 
       {tab === 'context' && (<>
@@ -68,6 +69,19 @@ export default function ProjectSettings({ project, manifest: initial, subtopic, 
           {specs.length === 0 && <li style={{ color: 'var(--fg2)' }}>none</li>}</ul>
         <McpForm onAdd={addMcp} />
         <p style={{ color: 'var(--fg2)', fontSize: 12 }}>Applied with <code>claude mcp add -s project</code> inside each subtopic folder. Restart the subtopic's session to pick up changes.</p>
+      </>)}
+      {tab === 'general' && (<>
+        <label><input type="checkbox" style={{ width: 'auto', marginRight: 8 }} checked={manifest.settings?.autoContext !== false}
+          onChange={async (e) => setManifest(await window.lime.projects.updateSettings(project.path, { autoContext: e.target.checked }))} />
+          Auto-update CONTEXT.md when context/ or subtopic notes change</label>
+        <label>Curator model (headless agent that writes CONTEXT.md; blank = default)</label>
+        <input defaultValue={manifest.settings?.curatorModel ?? ''} placeholder="e.g. sonnet, opus, haiku"
+          onBlur={async (e) => setManifest(await window.lime.projects.updateSettings(project.path, { curatorModel: e.target.value.trim() }))} />
+        <label>Session model (passed as --model to each subtopic's Claude Code; blank = default, applies to new sessions)</label>
+        <input defaultValue={manifest.settings?.sessionModel ?? ''} placeholder="e.g. opus"
+          onBlur={async (e) => setManifest(await window.lime.projects.updateSettings(project.path, { sessionModel: e.target.value.trim() }))} />
+        <label>Project folder</label>
+        <div className="row"><code style={{ flex: 1, fontSize: 12 }}>{project.path}</code><button onClick={() => window.lime.projects.revealInFinder(project.path)}>Finder</button></div>
       </>)}
       {log && <pre className="log">{log}</pre>}
     </div></div>
