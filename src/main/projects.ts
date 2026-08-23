@@ -5,6 +5,7 @@ import { DEFAULT_SETTINGS } from '@shared/types'
 import { shell } from 'electron'
 import { COOL_LIME_HOME, CONTEXT_DIR, CONTEXT_FILE, MANIFEST, PROJECTS_ROOT, REGISTRY_FILE } from './paths'
 import { applyMcps } from './mcp'
+import researchStyle from './templates/research.md?raw'
 
 const slug = (s: string) =>
   s.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'untitled'
@@ -74,6 +75,7 @@ export async function addSubtopic(projectPath: string, name: string): Promise<Pr
   const sub = join(projectPath, dir)
   await fs.mkdir(join(sub, 'scratchpad'), { recursive: true })
   await fs.writeFile(join(sub, 'CLAUDE.md'), claudeMdTemplate(m.name, name))
+  await writeOutputStyle(sub)
   m.subtopics.push(dir)
   await writeManifest(projectPath, m)
   await applyMcps(sub, m.mcps.project)
@@ -115,4 +117,13 @@ export async function deleteSubtopic(projectPath: string, name: string): Promise
   delete m.mcps.subtopic[name]
   await writeManifest(projectPath, m)
   return m
+}
+
+/** Installs the "Research" output style into the subtopic and enables it for Claude Code. */
+export async function writeOutputStyle(sub: string) {
+  await fs.mkdir(join(sub, '.claude', 'output-styles'), { recursive: true })
+  await fs.writeFile(join(sub, '.claude', 'output-styles', 'research.md'), researchStyle)
+  const settingsPath = join(sub, '.claude', 'settings.local.json')
+  const existing = await readJson<Record<string, unknown>>(settingsPath, {})
+  await writeJson(settingsPath, { ...existing, outputStyle: 'Research' })
 }

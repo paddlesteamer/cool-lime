@@ -5,5 +5,5 @@
     "noEmit": true, "paths": { "@shared/*": ["./src/shared/*"] },
     "types": ["node"], "noUncheckedSideEffectImports": false
   },
-  "include": ["src", "electron.vite.config.ts"]
+  "include": ["src", "src/main/vite-env.d.ts", "electron.vite.config.ts"]
 }
