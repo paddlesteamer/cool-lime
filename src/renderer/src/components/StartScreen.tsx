@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ProjectRef } from '@shared/types'
 
-export default function StartScreen({ onOpen }: { onOpen: (path: string) => void }) {
+export default function StartScreen({ onOpen, onCancel }: { onOpen: (path: string) => void; onCancel?: () => void }) {
   const [recent, setRecent] = useState<ProjectRef[]>([])
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState('')
@@ -14,9 +14,9 @@ export default function StartScreen({ onOpen }: { onOpen: (path: string) => void
     try { const ref = await window.lime.projects.create(name, context); onOpen(ref.path) } catch (e: any) { setErr(e.message) }
   }
 
-  return (
-    <div className="start"><div className="card">
-      <h1><span>Cool</span>-Lime</h1>
+  const card = (
+    <div className="card">
+      <div className="row"><h1 style={{ flex: 1 }}><span>Cool</span>-Lime</h1>{onCancel && <button className="ghost" onClick={onCancel}>✕</button>}</div>
       <p className="sub">Projects with shared context, each subtopic a Claude Code session.</p>
       {!creating ? (<>
         {recent.length > 0 && <ul className="recent">{recent.map((r) => (
@@ -30,6 +30,7 @@ export default function StartScreen({ onOpen }: { onOpen: (path: string) => void
         {err && <div className="err">{err}</div>}
         <div className="row end"><button onClick={() => setCreating(false)}>Back</button><button className="primary" disabled={!name.trim()} onClick={create}>Create</button></div>
       </>)}
-    </div></div>
+    </div>
   )
+  return onCancel ? card : <div className="start">{card}</div>
 }

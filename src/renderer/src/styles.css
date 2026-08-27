@@ -51,6 +51,8 @@ input.inline { padding: 3px 6px; font-size: 12px; }
 .item { padding: 7px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item:hover { background: var(--bg3); color: var(--fg); }
 .item.active { color: var(--lime); background: var(--bg3); border-left: 2px solid var(--lime); padding-left: 10px; }
+.item .x { opacity: 0; padding: 0 2px; color: var(--fg2); } .item:hover .x { opacity: 1; } .item .x:hover { color: var(--danger); }
+.sidebar h3 .h3btns { display: flex; gap: 2px; align-items: center; }
 .item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex: none; }
 .item .dot.live { background: var(--lime); }
 .item .dot.busy { background: #f2d27a; animation: pulse 1s infinite alternate; }
