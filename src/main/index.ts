@@ -7,6 +7,7 @@ import * as mcp from './mcp'
 import * as context from './context'
 
 let win: BrowserWindow
+const send: ptyMgr.Sender = (ch, ...a) => { if (win && !win.isDestroyed() && !win.webContents.isDestroyed()) win.webContents.send(ch, ...a) }
 
 function createWindow() {
   win = new BrowserWindow({
@@ -15,6 +16,7 @@ function createWindow() {
     backgroundColor: '#1b1f1a',
     webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, nodeIntegration: false }
   })
+  ptyMgr.setBroadcast(send)
   if (process.env.ELECTRON_RENDERER_URL) win.loadURL(process.env.ELECTRON_RENDERER_URL)
   else win.loadFile(join(__dirname, '../renderer/index.html'))
   win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: 'deny' } })
@@ -41,7 +43,7 @@ handle('projects:importContextFiles', async (projectPath: string) => {
 handle('projects:revealInFinder', (p: string) => shell.showItemInFolder(p))
 
 // context pipeline
-handle('context:watch', (root: string) => context.startWatching(root, win.webContents))
+handle('context:watch', (root: string) => context.startWatching(root, send))
 handle('context:unwatch', context.stopWatching)
 handle('context:regenerate', (root: string) => context.schedule(root))
 handle('context:status', context.getStatus)
@@ -63,7 +65,7 @@ handle('mcp:remove', async (projectPath: string, sub: string | null, name: strin
 })
 
 // pty
-handle('pty:start', (id: string, cwd: string, cols: number, rows: number, model?: string, kind?: ptyMgr.SessionKind) => ptyMgr.startSession(id, cwd, win.webContents, cols, rows, model, kind))
+handle('pty:start', (id: string, cwd: string, cols: number, rows: number, model?: string, kind?: ptyMgr.SessionKind) => ptyMgr.startSession(id, cwd, cols, rows, model, kind))
 ipcMain.on('pty:write', (_e, id: string, d: string) => ptyMgr.writeSession(id, d))
 ipcMain.on('pty:resize', (_e, id: string, c: number, r: number) => ptyMgr.resizeSession(id, c, r))
 handle('pty:kill', ptyMgr.killSession)
@@ -74,7 +76,7 @@ handle('pty:has', ptyMgr.hasSession)
 handle('fs:tree', files.readTree)
 handle('fs:read', files.readFile)
 handle('fs:write', files.writeFile)
-handle('fs:watch', (root: string) => files.watchDir(root, win.webContents))
+handle('fs:watch', (root: string) => files.watchDir(root, send))
 handle('fs:unwatch', files.unwatch)
 
 app.whenReady().then(createWindow)

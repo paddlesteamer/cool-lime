@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import { join, basename } from 'path'
 import type { ProjectManifest, ProjectRef, ProjectSettings } from '@shared/types'
 import { DEFAULT_SETTINGS } from '@shared/types'
-import { shell } from 'electron'
+import { trashItem } from './platform'
 import { COOL_LIME_HOME, CONTEXT_DIR, CONTEXT_FILE, MANIFEST, PROJECTS_ROOT, REGISTRY_FILE } from './paths'
 import { applyMcps } from './mcp'
 import researchStyle from './templates/research.md?raw'
@@ -82,6 +82,9 @@ export async function addSubtopic(projectPath: string, name: string): Promise<Pr
   return m
 }
 
+export async function addContextBuffer(projectPath: string, name: string, buf: Buffer) {
+  await fs.writeFile(join(projectPath, CONTEXT_DIR, name.replace(/[^\w.\- ]/g, '_')), buf)
+}
 export async function importContextFile(projectPath: string, srcPath: string) {
   await fs.copyFile(srcPath, join(projectPath, CONTEXT_DIR, basename(srcPath)))
 }
@@ -112,7 +115,7 @@ export async function renameSubtopic(projectPath: string, from: string, to: stri
 export async function deleteSubtopic(projectPath: string, name: string): Promise<ProjectManifest> {
   const m = await readManifest(projectPath)
   if (!m.subtopics.includes(name)) throw new Error(`No such subtopic: ${name}`)
-  await shell.trashItem(join(projectPath, name))
+  await trashItem(join(projectPath, name))
   m.subtopics = m.subtopics.filter((s) => s !== name)
   delete m.mcps.subtopic[name]
   await writeManifest(projectPath, m)

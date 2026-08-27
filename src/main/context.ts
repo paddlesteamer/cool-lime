@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import { join, relative, sep } from 'path'
 import { execFile } from 'child_process'
 import chokidar, { FSWatcher } from 'chokidar'
-import type { WebContents } from 'electron'
+import type { Sender } from './pty'
 import type { ContextStatus } from '@shared/types'
 import { claudeBin, childPath } from './claudeBin'
 import { CONTEXT_DIR, CONTEXT_FILE } from './paths'
@@ -14,10 +14,10 @@ let timer: NodeJS.Timeout | null = null
 let running = false
 let pending = false
 let status: ContextStatus = { state: 'idle' }
-let wcRef: WebContents | null = null
+let sendRef: Sender = () => {}
 let projectRoot: string | null = null
 
-function setStatus(s: ContextStatus) { status = s; if (wcRef && !wcRef.isDestroyed()) wcRef.send('context:status', s) }
+function setStatus(s: ContextStatus) { status = s; sendRef('context:status', s) }
 export const getStatus = () => status
 
 const PROMPT = (project: string, subtopics: string[]) => `You are the context curator for the project "${project}".
@@ -73,11 +73,11 @@ function isTrigger(root: string, p: string) {
   return r[0] === CONTEXT_DIR || (r.length === 2 && r[1] === 'CLAUDE.md')
 }
 
-export function startWatching(root: string, wc: WebContents) {
+export function startWatching(root: string, send: Sender) {
   stopWatching()
-  projectRoot = root; wcRef = wc
+  projectRoot = root; sendRef = send
   watcher = chokidar.watch(root, {
-    ignored: (p) => p.split(sep).some((s) => s === 'node_modules' || s === '.git' || s === 'scratchpad'),
+    ignored: (p) => p.split(sep).some((s) => s === 'node_modules' || s === '.git' || s === 'scratchpad' || s === '.trash'),
     ignoreInitial: true, depth: 2, awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 100 }
   })
   const onEvt = async (p: string) => { if (isTrigger(root, p) && (await readManifest(root)).settings?.autoContext !== false) schedule(root) }

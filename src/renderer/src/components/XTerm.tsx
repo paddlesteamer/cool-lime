@@ -21,7 +21,7 @@ export default function XTerm({ id, cwd, visible, kind, model = '', onExit }: Pr
     term.open(ref.current!)
     fit.fit()
     termRef.current = { term, fit }
-    window.lime.pty.start(id, cwd, term.cols, term.rows, model, kind)
+    window.lime.pty.start(id, cwd, term.cols, term.rows, model, kind).then((replay: any) => { if (typeof replay === 'string' && replay) term.write(replay) })
     const offData = window.lime.pty.onData((sid: string, d: string) => { if (sid === id) term.write(d) })
     const offExit = window.lime.pty.onExit((sid: string, code: number) => { if (sid === id) { setExited(code); onExit?.(code) } })
     term.onData((d) => window.lime.pty.write(id, d))
