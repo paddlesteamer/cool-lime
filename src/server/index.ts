@@ -33,6 +33,7 @@ const methods: Record<string, (...a: any[]) => any> = {
   'projects.manifest': projects.readManifest,
   'projects.addSubtopic': projects.addSubtopic,
   'projects.renameSubtopic': projects.renameSubtopic,
+  'projects.renameProject': projects.renameProject,
   'projects.deleteSubtopic': projects.deleteSubtopic,
   'projects.updateSettings': projects.updateSettings,
   'projects.addContextText': projects.addContextText,

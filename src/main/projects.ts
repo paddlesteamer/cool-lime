@@ -3,6 +3,7 @@ import { join, basename } from 'path'
 import type { ProjectManifest, ProjectRef, ProjectSettings } from '@shared/types'
 import { DEFAULT_SETTINGS } from '@shared/types'
 import { trashItem } from './platform'
+import { migrateClaudeHistory } from './claudeHistory'
 import { COOL_LIME_HOME, CONTEXT_DIR, CONTEXT_FILE, MANIFEST, PROJECTS_ROOT, REGISTRY_FILE } from './paths'
 import { applyMcps } from './mcp'
 import researchStyle from './templates/research.md?raw'
@@ -105,10 +106,42 @@ export async function renameSubtopic(projectPath: string, from: string, to: stri
   if (!m.subtopics.includes(from)) throw new Error(`No such subtopic: ${from}`)
   if (m.subtopics.includes(dir)) throw new Error(`Subtopic exists: ${dir}`)
   await fs.rename(join(projectPath, from), join(projectPath, dir))
+  await migrateClaudeHistory(join(projectPath, from), join(projectPath, dir))
   m.subtopics = m.subtopics.map((s) => (s === from ? dir : s))
   if (m.mcps.subtopic[from]) { m.mcps.subtopic[dir] = m.mcps.subtopic[from]; delete m.mcps.subtopic[from] }
   await writeManifest(projectPath, m)
   return m
+}
+
+export async function renameProject(projectPath: string, newName: string): Promise<ProjectRef> {
+  const m = await readManifest(projectPath)
+  const oldName = m.name
+  const newPath = join(PROJECTS_ROOT, slug(newName))
+  if (newPath !== projectPath) {
+    try { await fs.access(newPath); throw new Error(`Project folder already exists: ${newPath}`) } catch (e: any) { if (e.code !== 'ENOENT') throw e }
+    await fs.rename(projectPath, newPath)
+    await migrateClaudeHistory(projectPath, newPath)
+    for (const s of m.subtopics) await migrateClaudeHistory(join(projectPath, s), join(newPath, s))
+  }
+  m.name = newName
+  await writeManifest(newPath, m)
+  // Refresh the name in generated headers (CONTEXT.md title, each CLAUDE.md heading and working rules).
+  try {
+    const c = join(newPath, CONTEXT_FILE)
+    await fs.writeFile(c, (await fs.readFile(c, 'utf8')).replace(`# ${oldName} — Shared Context`, `# ${newName} — Shared Context`))
+  } catch {}
+  for (const sub of m.subtopics) {
+    try {
+      const c = join(newPath, sub, 'CLAUDE.md')
+      const t = await fs.readFile(c, 'utf8')
+      await fs.writeFile(c, t.replace(`# ${oldName} / `, `# ${newName} / `).replace(`the project **${oldName}**`, `the project **${newName}**`))
+    } catch {}
+  }
+  const refs = (await readJson<ProjectRef[]>(REGISTRY_FILE, [])).filter((r) => r.path !== projectPath && r.path !== newPath)
+  const ref = { name: newName, path: newPath, lastOpened: new Date().toISOString() }
+  refs.push(ref)
+  await writeJson(REGISTRY_FILE, refs)
+  return ref
 }
 
 /** Moves the subtopic folder to the Trash (recoverable) and drops it from the manifest. */

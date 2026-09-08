@@ -94,6 +94,23 @@ export default function App() {
     setManifest(activePath, m)
     if (subtopic === name) setSubByProj((s) => ({ ...s, [activePath]: m.subtopics[0] ?? null }))
   }
+  const renameProject = async (path: string, name: string) => {
+    await window.lime.context.unwatch(path)
+    const ref = await window.lime.projects.renameProject(path, name)
+    if (ref.path !== path) {
+      await window.lime.pty.killPrefix(path)
+      setOpened((o) => o.filter((k) => !k.startsWith(path + '/')))
+    }
+    const { manifest } = await window.lime.projects.open(ref.path)
+    setProjs((ps) => ps.map((p) => (p.ref.path === path ? { ref, manifest } : p)))
+    setSubByProj((m) => {
+      const { [path]: old, ...rest } = m
+      return { ...rest, [ref.path]: old && manifest.subtopics.includes(old) ? old : manifest.subtopics[0] ?? null }
+    })
+    if (activePath === path) setActivePath(ref.path)
+    window.lime.context.watch(ref.path)
+  }
+
   const closeProject = (path: string) => {
     window.lime.pty.killPrefix(path)
     window.lime.context.unwatch(path)
@@ -133,7 +150,7 @@ export default function App() {
           {!showLeft && <Strip label="Sidebar" onClick={() => setShowLeft(true)} />}
           <div className={`pane ${showLeft ? '' : 'hidden'}`}>
             <Sidebar projs={projs} activePath={activePath} subtopic={subtopic} opened={opened}
-              onSelectProject={(p) => { setActivePath(p); setExternalFile(null) }} onCloseProject={closeProject} onAddProject={() => setAdding(true)}
+              onSelectProject={(p) => { setActivePath(p); setExternalFile(null) }} onCloseProject={closeProject} onAddProject={() => setAdding(true)} onRenameProject={renameProject}
               onSelectSubtopic={(s) => { if (activePath) setSubByProj((m) => ({ ...m, [activePath]: s })); setExternalFile(null) }}
               onAdd={addSubtopic} onRename={renameSubtopic} onDelete={deleteSubtopic}
               ctxStatus={activePath ? ctxStatus[activePath] ?? { state: 'idle' } : { state: 'idle' }}

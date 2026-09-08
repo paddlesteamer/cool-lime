@@ -79,7 +79,7 @@ export function startWatching(root: string, send: Sender) {
   })
   const job: Job = { watcher, timer: null, running: false, pending: false, status: { state: 'idle' }, send }
   jobs.set(root, job)
-  const onEvt = async (p: string) => { if (isTrigger(root, p) && (await readManifest(root)).settings?.autoContext !== false) schedule(root) }
+  const onEvt = async (p: string) => { try { if (isTrigger(root, p) && (await readManifest(root)).settings?.autoContext !== false) schedule(root) } catch {} }
   watcher.on('add', onEvt).on('change', onEvt).on('unlink', onEvt)
   setStatus(root, job, { state: 'idle' })
 }

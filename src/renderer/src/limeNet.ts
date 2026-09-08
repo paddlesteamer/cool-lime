@@ -53,7 +53,7 @@ export function installNetLime() {
     projects: {
       list: rpc('projects.list'), create: rpc('projects.create'), open: rpc('projects.open'),
       manifest: rpc('projects.manifest'), addSubtopic: rpc('projects.addSubtopic'),
-      renameSubtopic: rpc('projects.renameSubtopic'), deleteSubtopic: rpc('projects.deleteSubtopic'), updateSettings: rpc('projects.updateSettings'),
+      renameSubtopic: rpc('projects.renameSubtopic'), renameProject: rpc('projects.renameProject'), deleteSubtopic: rpc('projects.deleteSubtopic'), updateSettings: rpc('projects.updateSettings'),
       addContextText: rpc('projects.addContextText'), importContextFiles: pickAndUpload,
       revealInFinder: async () => console.warn('[cool-lime] reveal in Finder is unavailable in the browser')
     },
