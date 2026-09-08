@@ -4,6 +4,12 @@ import { homedir } from 'os'
 import { join } from 'path'
 import { claudeBin, childPath } from './claudeBin'
 
+/** GUI-launched Electron often has no locale in env; without a UTF-8 locale zsh/claude mangle non-ASCII (e.g. Turkish) output. */
+function utf8Locale(): Record<string, string> {
+  const lang = process.env.LANG && /utf-?8/i.test(process.env.LANG) ? process.env.LANG : 'en_US.UTF-8'
+  return { LANG: lang, LC_ALL: process.env.LC_ALL && /utf-?8/i.test(process.env.LC_ALL) ? process.env.LC_ALL : lang }
+}
+
 export type Sender = (ch: string, ...args: any[]) => void
 export type SessionKind = 'claude' | 'shell'
 
@@ -27,7 +33,7 @@ export function startSession(id: string, cwd: string, cols = 120, rows = 30, mod
     : [claudeBin(), ['--dangerously-skip-permissions', ...(hasClaudeHistory(cwd) ? ['--continue'] : []), ...(model ? ['--model', model] : [])]]
   const p = pty.spawn(bin, args, {
     name: 'xterm-256color', cols, rows, cwd,
-    env: { ...process.env, PATH: childPath(), TERM: 'xterm-256color', COLORTERM: 'truecolor', COOL_LIME: '1' } as any
+    env: { ...process.env, ...utf8Locale(), PATH: childPath(), TERM: 'xterm-256color', COLORTERM: 'truecolor', COOL_LIME: '1' } as any
   })
   const s = { p, buf: '' }
   sessions.set(id, s)
