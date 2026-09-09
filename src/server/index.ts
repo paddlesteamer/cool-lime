@@ -37,7 +37,6 @@ const methods: Record<string, (...a: any[]) => any> = {
   'projects.deleteSubtopic': projects.deleteSubtopic,
   'projects.updateSettings': projects.updateSettings,
   'projects.addContextText': projects.addContextText,
-  'projects.revealInFinder': () => false, // meaningless on a remote server
   'mcp.setProject': async (projectPath: string, specs: any[]) => {
     const m = await projects.readManifest(projectPath); m.mcps.project = specs; await projects.writeManifest(projectPath, m)
     let log = ''; for (const s of m.subtopics) log += await mcp.applyMcps(join(projectPath, s), specs); return log

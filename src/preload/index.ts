@@ -12,8 +12,7 @@ const api = {
     list: invoke('projects:list'), create: invoke('projects:create'), open: invoke('projects:open'),
     manifest: invoke('projects:manifest'), addSubtopic: invoke('projects:addSubtopic'),
     renameSubtopic: invoke('projects:renameSubtopic'), renameProject: invoke('projects:renameProject'), deleteSubtopic: invoke('projects:deleteSubtopic'), updateSettings: invoke('projects:updateSettings'),
-    addContextText: invoke('projects:addContextText'), importContextFiles: invoke('projects:importContextFiles'),
-    revealInFinder: invoke('projects:revealInFinder')
+    addContextText: invoke('projects:addContextText'), importContextFiles: invoke('projects:importContextFiles')
   },
   context: { watch: invoke('context:watch'), unwatch: invoke('context:unwatch'), regenerate: invoke('context:regenerate'), status: invoke('context:status'), onStatus: on('context:status') },
   mcp: { setProject: invoke('mcp:setProject'), setSubtopic: invoke('mcp:setSubtopic'), remove: invoke('mcp:remove') },

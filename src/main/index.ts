@@ -41,7 +41,6 @@ handle('projects:importContextFiles', async (projectPath: string) => {
   for (const f of r.filePaths) await projects.importContextFile(projectPath, f)
   return r.filePaths
 })
-handle('projects:revealInFinder', (p: string) => shell.showItemInFolder(p))
 
 // context pipeline
 handle('context:watch', (root: string) => context.startWatching(root, send))

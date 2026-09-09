@@ -60,7 +60,6 @@ export default function Sidebar({ projs, activePath, subtopic, opened, onSelectP
       {projMenu && (
         <div className="menu" style={{ left: projMenu.x, top: projMenu.y }} onClick={(e) => e.stopPropagation()}>
           <div onClick={() => { const pr = projs.find((p) => p.ref.path === projMenu.path); setRenamingProj(projMenu.path); setProjDraft(pr?.ref.name ?? ''); setProjMenu(null) }}>Rename</div>
-          <div onClick={() => { window.lime.projects.revealInFinder(projMenu.path); setProjMenu(null) }}>Reveal in Finder</div>
           <div onClick={() => { onCloseProject(projMenu.path); setProjMenu(null) }}>Close</div>
         </div>
       )}
@@ -79,13 +78,11 @@ export default function Sidebar({ projs, activePath, subtopic, opened, onSelectP
         <div className="spacer" />
         <h3>Context <button className="ghost" title="Regenerate CONTEXT.md now" disabled={ctxStatus.state === 'running'} onClick={onRegenerate}>↻</button></h3>
         <div className="item" onClick={() => onOpenFile(`${active.ref.path}/CONTEXT.md`)}><span className={`dot ${ctxStatus.state === 'running' ? 'busy' : ctxStatus.state === 'error' ? 'err' : 'live'}`} />CONTEXT.md</div>
-        <div className="item" onClick={() => window.lime.projects.revealInFinder(`${active.ref.path}/context`)}>context/ (sources)</div>
         <div className="status" title={ctxStatus.message}>{ctxStatus.state === 'running' ? '⏳ ' : ctxStatus.state === 'error' ? '⚠ ' : ''}{ctxStatus.message ?? (active.manifest.settings?.autoContext === false ? 'auto-update off' : ctxStatus.lastRun ? 'up to date' : 'watching for changes')}</div>
 
         {menu && (
           <div className="menu" style={{ left: menu.x, top: menu.y }} onClick={(e) => e.stopPropagation()}>
             <div onClick={() => { setRenaming(menu.s); setDraft(menu.s); setMenu(null) }}>Rename</div>
-            <div onClick={() => { window.lime.projects.revealInFinder(`${active.ref.path}/${menu.s}`); setMenu(null) }}>Reveal in Finder</div>
             <div className="danger" onClick={() => { if (confirm(`Move subtopic "${menu.s}" to Trash?`)) onDelete(menu.s); setMenu(null) }}>Delete…</div>
           </div>
         )}

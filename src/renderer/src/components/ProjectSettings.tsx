@@ -54,7 +54,7 @@ export default function ProjectSettings({ project, manifest: initial, subtopic, 
 
       {tab === 'context' && (<>
         <p style={{ color: 'var(--fg2)' }}>Sources live in <code>context/</code>. Cool-Lime distills them into <code>CONTEXT.md</code>, which every subtopic imports.</p>
-        <div className="row"><button onClick={importFiles}>Import files (md / pdf / docx / csv …)</button><button className="ghost" onClick={() => window.lime.projects.revealInFinder(`${project.path}/context`)}>Open context/ folder</button></div>
+        <div className="row"><button onClick={importFiles}>Import files (md / pdf / docx / csv …)</button></div>
         <label>Or add text</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="title (becomes file name)" />
         <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="markdown…" />
         <div className="row end"><button className="primary" disabled={!text.trim()} onClick={addText}>Save note</button></div>
@@ -81,7 +81,7 @@ export default function ProjectSettings({ project, manifest: initial, subtopic, 
         <input defaultValue={manifest.settings?.sessionModel ?? ''} placeholder="e.g. opus"
           onBlur={async (e) => setManifest(await window.lime.projects.updateSettings(project.path, { sessionModel: e.target.value.trim() }))} />
         <label>Project folder</label>
-        <div className="row"><code style={{ flex: 1, fontSize: 12 }}>{project.path}</code><button onClick={() => window.lime.projects.revealInFinder(project.path)}>Finder</button></div>
+        <div className="row"><code style={{ flex: 1, fontSize: 12 }}>{project.path}</code></div>
       </>)}
       {log && <pre className="log">{log}</pre>}
     </div></div>
