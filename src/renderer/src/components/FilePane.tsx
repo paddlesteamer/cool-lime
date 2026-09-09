@@ -3,6 +3,8 @@ import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
 import { json } from '@codemirror/lang-json'
 import { javascript } from '@codemirror/lang-javascript'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { FileNode, FsEvent } from '@shared/types'
 
 const lang = (p: string) => p.endsWith('.md') ? [markdown()] : p.endsWith('.json') ? [json()] : /\.(js|ts|jsx|tsx)$/.test(p) ? [javascript({ typescript: true, jsx: true })] : []
@@ -25,11 +27,16 @@ export default function FilePane({ root, externalFile, onCollapse }: { root: str
   const [content, setContent] = useState('')
   const [dirty, setDirty] = useState(false)
   const [changedOnDisk, setChangedOnDisk] = useState(false)
+  const [mode, setMode] = useState<'preview' | 'edit'>('edit')
   const dirtyRef = useRef(false); dirtyRef.current = dirty
   const fileRef = useRef<string | null>(null); fileRef.current = file
 
   const reload = useCallback(async () => { if (root) setTree(await window.lime.fs.tree(root)) }, [root])
-  const loadFile = useCallback(async (p: string) => { setContent(await window.lime.fs.read(p)); setFile(p); setDirty(false); setChangedOnDisk(false) }, [])
+  const loadFile = useCallback(async (p: string) => {
+    const c = await window.lime.fs.read(p)
+    if (p !== fileRef.current) setMode(p.endsWith('.md') ? 'preview' : 'edit')
+    setContent(c); setFile(p); setDirty(false); setChangedOnDisk(false)
+  }, [])
 
   useEffect(() => {
     if (!root) return
@@ -61,9 +68,15 @@ export default function FilePane({ root, externalFile, onCollapse }: { root: str
     <div className="right">
       <div className="paneHead"><span>Files</span><span className="grow" /><button className="ghost" onClick={reload}>↻</button><button className="ghost icon" title="Collapse pane" aria-label="Collapse pane" onClick={onCollapse}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></button></div>
       <div className="tree"><Tree nodes={tree} depth={0} active={file} onOpen={loadFile} /></div>
-      <div className="paneHead"><code>{shown}</code>{dirty && <span> •</span>}<span className="grow" /><button className="ghost" disabled={!dirty} onClick={save}>Save ⌘S</button></div>
+      <div className="paneHead"><code>{shown}</code>{dirty && <span> •</span>}<span className="grow" />
+        {file?.endsWith('.md') && (mode === 'preview'
+          ? <button className="ghost" onClick={() => setMode('edit')}>Edit</button>
+          : <button className="ghost" onClick={() => setMode('preview')}>Preview</button>)}
+        {mode === 'edit' && <button className="ghost" disabled={!dirty} onClick={save}>Save ⌘S</button>}</div>
       {changedOnDisk && <div className="banner">File changed on disk. <button onClick={() => loadFile(file!)}>Reload</button><button onClick={save}>Keep mine</button></div>}
-      <div className="editor">{file && <CodeMirror value={content} theme="dark" height="100%" style={{ height: '100%' }} extensions={lang(file)} onChange={(v) => { setContent(v); setDirty(true) }} basicSetup={{ lineNumbers: true, foldGutter: false }} />}</div>
+      {mode === 'preview' && file?.endsWith('.md')
+        ? <div className="mdview"><Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown></div>
+        : <div className="editor">{file && <CodeMirror value={content} theme="dark" height="100%" style={{ height: '100%' }} extensions={lang(file)} onChange={(v) => { setContent(v); setDirty(true) }} basicSetup={{ lineNumbers: true, foldGutter: false }} />}</div>}
     </div>
   )
 }

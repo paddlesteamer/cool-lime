@@ -93,3 +93,18 @@ pre.log { background: var(--bg); border: 1px solid var(--border); padding: 8px; 
 .tab { padding: 3px 8px; border-radius: 5px; cursor: pointer; color: var(--fg2); display: inline-flex; gap: 6px; align-items: center; }
 .tab:hover { background: var(--bg3); } .tab.active { color: var(--fg); background: var(--bg3); }
 .tab .x { opacity: .5; } .tab .x:hover { opacity: 1; color: var(--danger); }
+
+.mdview { flex: 1; min-height: 0; overflow: auto; padding: 14px 18px; line-height: 1.6; font-size: 13.5px; }
+.mdview h1, .mdview h2, .mdview h3 { color: var(--lime); margin: 1.1em 0 .4em; line-height: 1.25; }
+.mdview h1 { font-size: 19px; } .mdview h2 { font-size: 16px; } .mdview h3 { font-size: 14px; }
+.mdview h1:first-child { margin-top: 0; }
+.mdview a { color: var(--lime); }
+.mdview code { font-family: var(--mono); font-size: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
+.mdview pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; overflow-x: auto; }
+.mdview pre code { border: 0; padding: 0; background: none; }
+.mdview blockquote { margin: .6em 0; padding: 2px 12px; border-left: 3px solid var(--lime2); color: var(--fg2); }
+.mdview table { border-collapse: collapse; margin: .6em 0; display: block; overflow-x: auto; }
+.mdview th, .mdview td { border: 1px solid var(--border); padding: 4px 10px; }
+.mdview th { background: var(--bg3); }
+.mdview hr { border: 0; border-top: 1px solid var(--border); }
+.mdview ul, .mdview ol { padding-left: 22px; }
